@@ -37,9 +37,11 @@ export default function CloseCall({ active, setActive }) {
   // Re-send every stage (the server upserts, so this is safe) so nothing
   // recorded offline is lost before the LLM reads the call.
   async function syncStages() {
-    for (const s of recorded) {
-      const r = results[s.n];
-      await api.saveStage(call.id, s.n, { tap: r.tap || null, words: r.words?.trim() || null });
+    // Every stage the caller touched, including ones they emptied (an empty payload clears it).
+    const touched = Object.keys(results).map(Number).filter((n) => n >= 1 && n <= 7);
+    for (const n of touched) {
+      const r = results[n] ?? {};
+      await api.saveStage(call.id, n, { tap: r.tap || null, words: r.words?.trim() || null });
     }
   }
 

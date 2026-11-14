@@ -91,3 +91,18 @@ test('recording: says so when no Gemini key is set', async () => {
   const res = await fetch(`${base}/api/calls/${call.id}/recording`, { method: 'POST', headers: { 'Content-Type': 'audio/mpeg' }, body: Buffer.from('fake') });
   assert.equal(res.status, 501);
 });
+
+test('clearing a stage removes it and lowers stage_reached', async () => {
+  const { body: call } = await req('POST', '/api/calls', { prospect_name: 'A', company: 'B' });
+  await req('PUT', `/api/calls/${call.id}/stages/2`, { tap: 'asked_what' });
+  await req('PUT', `/api/calls/${call.id}/stages/6`, { tap: 'no_need' });
+  let { body } = await req('GET', `/api/calls/${call.id}`);
+  assert.equal(body.stage_reached, 6);
+
+  const { status, body: cleared } = await req('PUT', `/api/calls/${call.id}/stages/6`, { tap: null, words: '  ' });
+  assert.equal(status, 200);
+  assert.equal(cleared.cleared, true);
+  ({ body } = await req('GET', `/api/calls/${call.id}`));
+  assert.equal(body.stage_reached, 2);
+  assert.deepEqual(body.stages.map((s) => s.stage), [2]);
+});

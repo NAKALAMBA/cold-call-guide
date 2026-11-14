@@ -65,6 +65,16 @@ function supabaseStore(url, key) {
       return row;
     },
 
+    async clearStage(callId, stage) {
+      const call = must(await db.from('calls').select('id').eq('id', callId).maybeSingle());
+      if (!call) throw new NotFoundError('Call not found');
+      must(await db.from('stage_results').delete().eq('call_id', callId).eq('stage', stage));
+      const left = must(await db.from('stage_results').select('stage').eq('call_id', callId).order('stage', { ascending: false }).limit(1));
+      const reached = left[0]?.stage ?? 1;
+      must(await db.from('calls').update({ stage_reached: reached }).eq('id', callId));
+      return { stage, cleared: true, stage_reached: reached };
+    },
+
     async closeCall(id, fields) {
       const call = must(await db.from('calls').select('id, started_at').eq('id', id).maybeSingle());
       if (!call) throw new NotFoundError('Call not found');
@@ -135,6 +145,14 @@ function memoryStore() {
       stages.get(callId).set(stage, row);
       if (stage > call.stage_reached) call.stage_reached = stage;
       return row;
+    },
+    async clearStage(callId, stage) {
+      const call = calls.get(callId);
+      if (!call) throw new NotFoundError('Call not found');
+      const rows = stages.get(callId);
+      rows.delete(stage);
+      call.stage_reached = Math.max(1, ...rows.keys());
+      return { stage, cleared: true, stage_reached: call.stage_reached };
     },
     async closeCall(id, fields) {
       const call = calls.get(id);

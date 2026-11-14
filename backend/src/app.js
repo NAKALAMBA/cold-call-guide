@@ -65,11 +65,13 @@ export function createApp({ store, env = process.env }) {
     res.json(await store.getCall(uuidParam.parse(req.params.id)));
   }));
 
-  // Save what happened at one stage (idempotent: saving again overwrites).
+  // Save what happened at one stage (idempotent: saving again overwrites; empty clears it).
   app.put('/api/calls/:id/stages/:stage', route(async (req, res) => {
     const id = uuidParam.parse(req.params.id);
     const stage = stageParam.parse(req.params.stage);
     const body = stageResultSchema(stage).parse(req.body);
+    // No tap and no words means the caller cleared this stage: remove it.
+    if (!body.tap && !body.words) return res.json(await store.clearStage(id, stage));
     res.json(await store.saveStage(id, stage, body));
   }));
 

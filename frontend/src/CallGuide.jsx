@@ -54,15 +54,19 @@ export default function CallGuide({ active, setActive }) {
   // and every stage is re-sent (idempotently) when the call is closed.
   function saveStage(stageN) {
     const r = active.results[stageN];
-    if (!r || (!r.tap && !r.words?.trim())) return;
-    const payload = { tap: r.tap || null, words: r.words?.trim() || null };
+    const empty = !r || (!r.tap && !r.words?.trim());
+    // Nothing recorded and nothing on the server: nothing to do.
+    if (empty && !lastSaved.current[stageN]) return;
+    // Emptied after a save: an empty payload clears the stage on the server.
+    const payload = empty ? { tap: null, words: null } : { tap: r.tap || null, words: r.words?.trim() || null };
     const key = JSON.stringify(payload);
     if (lastSaved.current[stageN] === key) return;
     setSaveState((s) => ({ ...s, [stageN]: 'saving' }));
     api
       .saveStage(call.id, stageN, payload)
       .then(() => {
-        lastSaved.current[stageN] = key;
+        if (empty) delete lastSaved.current[stageN];
+        else lastSaved.current[stageN] = key;
         setSaveState((s) => ({ ...s, [stageN]: 'saved' }));
       })
       .catch(() => setSaveState((s) => ({ ...s, [stageN]: 'error' })));

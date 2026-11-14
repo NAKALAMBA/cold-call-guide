@@ -29,8 +29,7 @@ export function stageResultSchema(stageN) {
     .object({
       tap: tapKeys.length ? z.enum(tapKeys).nullish() : z.null().optional(),
       words: trimmed(2000).nullish(),
-    })
-    .refine((v) => v.tap || v.words, { message: 'Send a tap, words, or both' });
+    });
 }
 
 const closeFields = {
