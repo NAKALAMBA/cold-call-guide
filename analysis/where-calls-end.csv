@@ -1,0 +1,101 @@
+id,logged_outcome,ended_at_stage,what_happened,log_matches_call
+T001,next_step_agreed,7,Meeting with founder Tuesday after 2 PM,yes
+T002,not_logged,3,Startup; call back after 30 minutes,no
+T003,do_not_call,6,Back office; not the relevant person,partly
+T004,wrong_person,1,Not at the listed company; wrong number,yes
+T005,not_logged,3,Call me in an hour,no
+T006,next_step_agreed,7,Will read the emailed profile and reply,partly
+T007,not_interested,2,Declined while hearing the pitch,yes
+T008,next_step_agreed,7,Report plus call next Thursday,yes
+T009,not_interested,6,Internal business model; not expanding,yes
+T010,agreed_to_receive_report,7,Referred to Mr. Suresh with number,no
+T011,follow_up,7,Will revert on the profile tomorrow,yes
+T012,not_interested,2,Asked what a growth report is twice; declined,yes
+T013,do_not_call,1,Former independent director; left two years ago,no
+T014,follow_up,7,Not right person; call in evening for referral,yes
+T015,do_not_call,1,Number not his for 14 years,no
+T016,call_again,2,Line cracking up during purpose,yes
+T017,not_interested,2,Declined after long pitch,yes
+T018,not_interested,6,Cannot reveal anything to outsiders,yes
+T019,not_logged,7,Send on WhatsApp; will connect if useful,no
+T020,do_not_call,2,Not interested at this point,partly
+T021,do_not_call,6,Internal team; do not outsource,partly
+T022,wrong_person,1,Not at the listed company,yes
+T023,not_logged,6,Told you to send WhatsApp or email,no
+T024,do_not_call,6,Not right person; speak to CFO,no
+T025,wrong_person,6,Speak to our distributor,yes
+T026,next_step_agreed,7,Report on WhatsApp; call next week,partly
+T027,follow_up,3,At a school event; speak at 1:30,yes
+T028,wrong_person,1,Could not confirm who answered,yes
+T029,wrong_person,6,Not the right person; no referral,yes
+T030,wrong_person,6,Not into business development; try Mr. Sen,yes
+T031,call_again,1,Number reassigned 10 years ago,no
+T032,call_again,1,Asked for Kannada,yes
+T033,interested,3,Joined a month ago; in a meeting,no
+T034,moved_company,2,Purpose never landed; call fizzled,partly
+T035,interested,7,Call tomorrow 5 PM,partly
+T036,not_logged,3,Travelling till Tuesday; send details by mail,no
+T037,not_interested,2,Do not send again,partly
+T038,moved_company,1,Left last year,yes
+T039,moved_company,1,No longer with the company,yes
+T040,moved_company,1,No longer with the company,yes
+T041,do_not_call,6,Not right person; call head office,no
+T042,not_logged,7,Small company; call Monday 5 PM,no
+T043,not_interested,5,Stable; no need for new customers,yes
+T044,not_interested,6,Decisions taken at US corporate,yes
+T045,not_logged,1,Company acquired,no
+T046,not_logged,7,Report on WhatsApp; call Tuesday 10:30,no
+T047,interested,7,Details on WhatsApp after asking about charges,partly
+T048,follow_up,4,We are the market leader; put on hold,partly
+T049,do_not_call,6,Handles sustainability only; not right person,no
+T050,not_logged,7,Referred to Mr. Naik; number to be texted,no
+T051,agreed_to_receive_report,7,Report on official email,yes
+T052,not_logged,7,Report on email,no
+T053,not_interested,6,What do you want from me; no time,yes
+T054,agreed_to_receive_report,7,Report on email and WhatsApp,yes
+T055,follow_up,6,On another call; drop a mail,yes
+T056,not_logged,7,Report on WhatsApp; discuss later,no
+T057,follow_up,6,Wants the commercial intention first,partly
+T058,agreed_to_receive_report,7,Report on WhatsApp,yes
+T059,moved_company,1,Moving to a different organisation,yes
+T060,next_step_agreed,7,Report on WhatsApp; call Tuesday morning,yes
+T061,agreed_to_receive_report,7,Report on email for management,yes
+T062,agreed_to_receive_report,7,Report on email; call tomorrow,partly
+T063,follow_up,7,Intro mail with scope and clients,yes
+T064,follow_up,7,Sample report plus follow-up call,yes
+T065,agreed_to_receive_report,7,Email; will add relevant person,yes
+T066,not_interested,1,Left that company eight years ago,no
+T067,agreed_to_receive_report,7,Report on personal email,yes
+T068,follow_up,1,Kaushik left; service number,no
+T069,follow_up,3,Busy with a deliverable; call day after,yes
+T070,wrong_person,1,Mahesh not reachable on this number,yes
+T071,not_interested,6,Global tie-ups with big four,yes
+T072,next_step_agreed,7,Profile on email when ready,partly
+T073,agreed_to_receive_report,7,Draft on email,yes
+T074,next_step_agreed,7,Report on email; call next Tuesday,yes
+T075,do_not_call,6,Not right person; will not share contact,no
+T076,not_interested,6,We have many reports; how is yours different,yes
+T077,call_again,6,Working with top consultants,no
+T078,interested,7,Send portfolio and clients,partly
+T079,wrong_person,6,Not authorised; ask compliance,yes
+T080,interested,7,Consent for profile; send in a day or two,partly
+T081,interested,7,Website on WhatsApp; call in 2-3 days,partly
+T082,not_logged,7,Report and deck on another WhatsApp number,no
+T083,agreed_to_receive_report,7,Report on WhatsApp,yes
+T084,do_not_call,7,Report on WhatsApp; call next Thursday,no
+T085,next_step_agreed,7,Call Thursday morning to fix meeting,yes
+T086,next_step_agreed,7,Report by email; call after,yes
+T087,follow_up,6,Not decision maker; share on email,partly
+T088,not_interested,6,Global consultants under central contract,yes
+T089,follow_up,7,Need named; travelling; call after the 20th,yes
+T090,interested,7,Sample report; good time you called,yes
+T091,agreed_to_receive_report,7,Profile on email,yes
+T092,agreed_to_receive_report,7,Has consultant; report on email anyway,yes
+T093,follow_up,7,Call tomorrow 3 PM; PDF on WhatsApp,partly
+T094,not_logged,7,Website and sample on email,no
+T095,next_step_agreed,7,Report Monday; call Wednesday,yes
+T096,next_step_agreed,7,Will make report; call with queries,partly
+T097,not_interested,6,Not right person; be clear on focus,yes
+T098,follow_up,6,Re-orgs; not a good time till next year,partly
+T099,agreed_to_receive_report,7,Company profile on email,yes
+T100,agreed_to_receive_report,7,Details shared; call next Monday,partly

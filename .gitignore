@@ -1,0 +1,13 @@
+# The transcripts are for this task only and must not be published.
+cold-call-transcripts-100/
+
+node_modules/
+dist/
+.env
+.env.local
+.vercel
+*.log
+.DS_Store
+
+# local deploy tokens
+.deploy.env
