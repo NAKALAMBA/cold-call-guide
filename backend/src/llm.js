@@ -23,6 +23,7 @@ Rules that matter:
 - A document agreed on WhatsApp or email, with no fixed time: agreed_to_receive_report.
 - A meeting, or a call at a time the prospect named, or a report plus a follow-up call at a set time: next_step_agreed.
 - "Send it on WhatsApp" can be politeness; it is still agreed_to_receive_report, not interested.
+- But after a clear no ("we don't require anything", "we already have consultants"), agreeing only to receive your website, company profile or deck "for the future" is still not_interested. agreed_to_receive_report is for a report or document they agreed to look at.
 - A warm goodbye after a no is still not_interested.
 - Reached someone who is not the listed person or says they are not the right person: wrong_person. Left the company: moved_company.
 - Busy, call back at a time: follow_up. Language or line problems: call_again.
