@@ -11,6 +11,9 @@ import {
   listQuerySchema,
 } from './schemas.js';
 import { checkOutcome, llmConfigured } from './llm.js';
+import { AUDIO_TYPES, transcribeCall, transcriptText, transcriptionAvailable } from './transcribe.js';
+
+const MAX_AUDIO_MB = 12;
 
 // Wrap async handlers so thrown errors reach the error middleware.
 const route = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -34,7 +37,7 @@ export function createApp({ store, env = process.env }) {
 
   // Health: answers as soon as the server is up. ?deep=1 also checks the database.
   app.get('/health', route(async (req, res) => {
-    const body = { status: 'ok', service: 'meridian-call-guide', store: store.kind, llm: llmConfigured(env), time: new Date().toISOString() };
+    const body = { status: 'ok', service: 'meridian-call-guide', store: store.kind, llm: llmConfigured(env), transcription: transcriptionAvailable(env), time: new Date().toISOString() };
     if (req.query.deep) {
       try {
         await store.ping();
@@ -78,6 +81,25 @@ export function createApp({ store, env = process.env }) {
     res.json(await checkOutcome(call, chosen, env));
   }));
 
+  // Upload a call recording (raw audio body). Gemini transcribes it and maps it
+  // onto the stages. The transcript is stored; the stage suggestions are only
+  // returned, for the caller to accept or ignore on the close screen.
+  app.post(
+    '/api/calls/:id/recording',
+    express.raw({ type: () => true, limit: `${MAX_AUDIO_MB}mb` }),
+    route(async (req, res) => {
+      const id = uuidParam.parse(req.params.id);
+      const type = String(req.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
+      const mime = AUDIO_TYPES[type];
+      if (!mime) return res.status(415).json({ error: `Send an audio file (mp3, m4a, wav, ogg, webm). Got "${type || 'nothing'}".` });
+      if (!req.body?.length) return res.status(400).json({ error: 'The recording is empty.' });
+      await store.getCall(id); // 404 if the call does not exist
+      const result = await transcribeCall(req.body, mime, env);
+      await store.saveTranscript(id, transcriptText(result));
+      res.json(result);
+    }),
+  );
+
   // Close a call: outcome, next step, the stage-5 words, the list summary.
   app.post('/api/calls/:id/close', route(async (req, res) => {
     const id = uuidParam.parse(req.params.id);
@@ -97,6 +119,7 @@ export function createApp({ store, env = process.env }) {
       return res.status(400).json({ error: 'Invalid request', details: err.issues.map((i) => ({ path: i.path.join('.'), message: i.message })) });
     }
     if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Body is not valid JSON' });
+    if (err.type === 'entity.too.large') return res.status(413).json({ error: `The file is too large. Keep recordings under ${MAX_AUDIO_MB} MB (an mp3 of a 10-minute call is about 5 MB).` });
     const status = err.status || 500;
     if (status >= 500) console.error(err);
     res.status(status).json({ error: status >= 500 ? 'Server error' : err.message });

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { api } from './api.js';
+import { api, local } from './api.js';
 import { STAGES, stageByN, OUTCOMES } from '../../shared/stages.js';
-import { TopBar, Timer, ProspectLine, StagePills, Label } from './ui.jsx';
+import { TopBar, Timer, ProspectLine, StagePills, Label, Dictate } from './ui.jsx';
 import { go } from './App.jsx';
 
 export function EndedHere({ stage }) {
@@ -39,6 +39,11 @@ export default function CallGuide({ active, setActive }) {
   const current = results[n] ?? {};
   const [saveState, setSaveState] = useState({}); // n -> 'saving' | 'saved' | 'error'
   const lastSaved = useRef({}); // n -> JSON of what the server has
+  const [lang, setLangState] = useState(() => local.get('dictateLang', 'en-IN'));
+  const setLang = (l) => {
+    setLangState(l);
+    local.set('dictateLang', l);
+  };
 
   const update = (patch) =>
     setActive((a) => ({ ...a, results: { ...a.results, [a.stage]: { ...(a.results[a.stage] ?? {}), ...patch } } }));
@@ -140,9 +145,14 @@ export default function CallGuide({ active, setActive }) {
           </label>
         )}
 
-        <label className="field">
-          <Label>{stage.wordsRequired ? 'Their words, exactly' : 'Their words'}</Label>
+        <div className="field">
+          <div className="words-head">
+            <Label>{stage.wordsRequired ? 'Their words, exactly' : 'Their words'}</Label>
+            {/* key={n}: switching stage unmounts it, which stops any dictation in progress */}
+            <Dictate key={n} value={current.words ?? ''} onChange={(words) => update({ words })} lang={lang} setLang={setLang} />
+          </div>
           <textarea
+            aria-label="Their words"
             className={stage.wordsRequired ? 'words-key' : ''}
             value={current.words ?? ''}
             onChange={(e) => update({ words: e.target.value })}
@@ -150,7 +160,7 @@ export default function CallGuide({ active, setActive }) {
             rows={stage.wordsRequired ? 4 : 3}
             maxLength={2000}
           />
-        </label>
+        </div>
       </main>
 
       <div className="footer footer-sticky">

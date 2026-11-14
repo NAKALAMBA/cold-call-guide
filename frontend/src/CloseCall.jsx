@@ -30,6 +30,7 @@ export default function CloseCall({ active, setActive }) {
   const [check, setCheck] = useState(null); // { ...result, for: outcome }
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
+  const [rec, setRec] = useState({ status: 'idle' }); // idle | uploading | done | error
 
   const need = results[5]?.words?.trim();
 
@@ -91,6 +92,38 @@ export default function CloseCall({ active, setActive }) {
     }
   }
 
+  async function uploadRecording(file) {
+    if (!file) return;
+    if (file.size > 12 * 1024 * 1024) {
+      setRec({ status: 'error', error: 'That file is over 12 MB. Export the call as mp3 (a 10-minute call is about 5 MB).' });
+      return;
+    }
+    setRec({ status: 'uploading', name: file.name });
+    try {
+      const result = await api.uploadRecording(call.id, file);
+      setRec({ status: 'done', name: file.name, result });
+    } catch (err) {
+      setRec({ status: 'error', error: err.message });
+    }
+  }
+
+  // Merge the recording's suggestions into what the caller recorded.
+  // "gaps" only fills empty taps and empty word boxes; "all" lets the recording win.
+  function applyRecording(mode) {
+    const next = { ...results };
+    for (const s of rec.result.stages) {
+      const cur = results[s.stage] ?? {};
+      next[s.stage] =
+        mode === 'all'
+          ? { tap: s.tap ?? cur.tap ?? null, words: s.words ?? cur.words ?? '' }
+          : { tap: cur.tap || s.tap || null, words: cur.words?.trim() ? cur.words : s.words ?? '' };
+    }
+    setActive((a) => ({ ...a, results: next, when }));
+    setOutcome(suggestOutcome(next));
+    setCheck(null);
+    setRec((r) => ({ ...r, applied: mode }));
+  }
+
   const backTo = (n) => {
     setActive((a) => ({ ...a, stage: Math.min(n, 7), when }));
     go('/call');
@@ -112,6 +145,70 @@ export default function CloseCall({ active, setActive }) {
           <p className="ended-insight">{close.insight}</p>
         </div>
         <MaySay stage={close} />
+
+        <Label>Fill from a recording</Label>
+        <div className="rec">
+          <p className="rec-note">
+            Only if the prospect was told the call is recorded. Upload the call (mp3, m4a or wav, up to 12 MB) and Gemini suggests a tap and their words for each
+            stage. Nothing changes until you choose.
+          </p>
+          <label className={`btn btn-small file-btn ${rec.status === 'uploading' ? 'is-busy' : ''}`}>
+            <input
+              type="file"
+              accept="audio/*,.m4a,.mp3,.wav,.ogg,.opus,.webm"
+              onChange={(e) => uploadRecording(e.target.files?.[0])}
+              disabled={rec.status === 'uploading'}
+            />
+            {rec.status === 'uploading' ? `Transcribing ${rec.name}…` : rec.status === 'done' ? 'Upload another recording' : 'Choose recording'}
+          </label>
+          {rec.status === 'uploading' && <p className="rec-note">About 5 seconds for a short call, longer for a long one.</p>}
+          {rec.status === 'error' && <p className="error">{rec.error}</p>}
+          {rec.status === 'done' && (
+            <>
+              {rec.result.stages.length === 0 ? (
+                <p className="rec-note">The transcript is below, but no stages could be matched. Fill them by hand.</p>
+              ) : (
+                <ol className="record sugg">
+                  {rec.result.stages.map((s) => {
+                    const cur = results[s.stage] ?? {};
+                    const has = cur.tap || cur.words?.trim();
+                    const same = has && cur.tap === s.tap;
+                    return (
+                      <li key={s.stage}>
+                        <span className="record-stage">
+                          {s.stage} {stageByN(s.stage).name}
+                          <span className={`sugg-tag ${!has ? 'new' : same ? 'same' : 'diff'}`}>{!has ? 'new' : same ? 'same' : 'differs'}</span>
+                        </span>
+                        <div>
+                          {s.tap && <div className="record-tap">{tapLabel(s.stage, s.tap)}</div>}
+                          {s.words && <div className="record-words">&ldquo;{s.words}&rdquo;</div>}
+                          {has && !same && cur.tap && <div className="sugg-yours">You tapped: {tapLabel(s.stage, cur.tap)}</div>}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
+              {rec.result.stages.length > 0 && (
+                <div className="row">
+                  <button className="btn btn-small" onClick={() => applyRecording('gaps')}>Fill the gaps</button>
+                  <button className="btn btn-small btn-ghost" onClick={() => applyRecording('all')}>Use the recording for all</button>
+                  {rec.applied && <span className="sugg-done">{rec.applied === 'all' ? 'Recording applied to every stage it heard.' : 'Empty fields filled from the recording.'}</span>}
+                </div>
+              )}
+              <details className="transcript">
+                <summary>
+                  Transcript · {rec.result.transcript.length} turns{rec.result.language ? ` · ${rec.result.language}` : ''} · {rec.result.model}
+                </summary>
+                <ol>
+                  {rec.result.transcript.map((t, i) => (
+                    <li key={i}><b>{t.speaker}</b> {t.text}</li>
+                  ))}
+                </ol>
+              </details>
+            </>
+          )}
+        </div>
 
         <Label>What you recorded · reached stage {reached}, {stageByN(reached).name}</Label>
         {recorded.length === 0 ? (

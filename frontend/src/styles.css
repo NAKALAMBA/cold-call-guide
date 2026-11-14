@@ -217,3 +217,34 @@ button.record-stage:hover { color: var(--accent); }
   .record li { grid-template-columns: 1fr; gap: 2px; }
   .facts { grid-template-columns: 1fr; }
 }
+
+/* dictation */
+.words-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; flex-wrap: wrap; }
+.words-head .label { margin-bottom: 8px; }
+.dictate { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.mic { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 5px 12px 5px 9px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.mic:hover { border-color: var(--accent); color: var(--accent); }
+.mic-on, .mic-on:hover { background: var(--bad); border-color: var(--bad); color: var(--card); }
+@media (prefers-reduced-motion: no-preference) { .mic-on svg { animation: pulse 1.2s ease-in-out infinite; } }
+@keyframes pulse { 50% { opacity: 0.35; } }
+.seg-mini button { padding: 4px 9px; font-size: 12px; }
+.dictate-msg { flex-basis: 100%; font-size: 12px; color: var(--bad); text-align: right; }
+
+/* recording */
+.rec { border: 1px dashed var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 10px; }
+.rec-note { margin: 0; font-size: 13px; color: var(--ink-2); }
+.file-btn { position: relative; justify-self: start; cursor: pointer; }
+.file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.file-btn:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.file-btn.is-busy { opacity: 0.7; cursor: progress; }
+.sugg { border-top: 0; }
+.sugg-tag { display: inline-block; margin-left: 6px; font: 600 10px var(--mono); padding: 1px 6px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
+.sugg-tag.new { background: var(--accent-soft); color: var(--accent); }
+.sugg-tag.diff { background: var(--warn-soft); color: var(--warn); }
+.sugg-tag.same { background: var(--paper); color: var(--ink-3); }
+.sugg-yours { font-size: 12px; color: var(--warn); margin-top: 2px; }
+.sugg-done { font-size: 13px; color: var(--accent); align-self: center; }
+.transcript { font-size: 14px; }
+.transcript summary { cursor: pointer; font: 600 12px var(--mono); color: var(--ink-2); padding: 4px 0; }
+.transcript ol { margin: 6px 0 0; padding-left: 0; list-style: none; display: grid; gap: 4px; max-height: 320px; overflow-y: auto; }
+.transcript b { font: 600 11px var(--mono); color: var(--ink-3); margin-right: 4px; }

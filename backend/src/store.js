@@ -80,6 +80,10 @@ function supabaseStore(url, key) {
       );
     },
 
+    async saveTranscript(id, transcript) {
+      must(await db.from('calls').update({ transcript }).eq('id', id));
+    },
+
     async listCalls({ limit, outcome, stage }) {
       let q = db.from('calls').select(CALL_LIST_COLUMNS).order('started_at', { ascending: false }).limit(limit);
       if (outcome) q = q.eq('outcome', outcome);
@@ -143,12 +147,17 @@ function memoryStore() {
       });
       return call;
     },
+    async saveTranscript(id, transcript) {
+      const call = calls.get(id);
+      if (!call) throw new NotFoundError('Call not found');
+      call.transcript = transcript;
+    },
     async listCalls({ limit, outcome, stage }) {
       return [...calls.values()]
         .filter((c) => (!outcome || c.outcome === outcome) && (!stage || c.stage_reached === stage))
         .sort((a, b) => b.started_at.localeCompare(a.started_at))
         .slice(0, limit)
-        .map(({ ai_check, ...rest }) => rest);
+        .map(({ ai_check, transcript, ...rest }) => rest);
     },
   };
 }

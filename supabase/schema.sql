@@ -30,8 +30,12 @@ create table if not exists public.calls (
   next_step_when    text check (char_length(next_step_when) <= 120),
   need_words        text check (char_length(need_words) <= 2000),  -- the prospect's words from stage 5
   summary           text check (char_length(summary) <= 200),      -- one line for the past-calls list
-  ai_check          jsonb                                          -- what the LLM said about the outcome
+  ai_check          jsonb,                                         -- what the LLM said about the outcome
+  transcript        text check (char_length(transcript) <= 200000) -- from an uploaded recording, if any
 );
+
+-- Added after first deploy; safe to re-run.
+alter table public.calls add column if not exists transcript text check (char_length(transcript) <= 200000);
 
 create index if not exists calls_started_at_idx on public.calls (started_at desc);
 create index if not exists calls_outcome_idx on public.calls (outcome);

@@ -55,6 +55,18 @@ export default function CallDetail({ id }) {
               </ol>
             )}
 
+            {call.transcript && (
+              <details className="transcript">
+                <summary>Transcript from the recording</summary>
+                <ol>
+                  {call.transcript.split('\n').map((line, i) => {
+                    const m = line.match(/^(CALLER|PROSPECT|RECEPTION|UNKNOWN): (.*)$/);
+                    return <li key={i}>{m ? <><b>{m[1]}</b> {m[2]}</> : line}</li>;
+                  })}
+                </ol>
+              </details>
+            )}
+
             {call.ai_check && (
               <div className={`check ${call.ai_check.agrees ? 'check-ok' : 'check-warn'}`}>
                 <div className="check-head">

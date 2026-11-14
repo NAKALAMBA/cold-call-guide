@@ -79,3 +79,15 @@ test('T084 replay: check flags a do_not_call log on a call with a next step', as
   const { body: list } = await req('GET', '/api/calls?stage=7');
   assert.ok(list.some((c) => c.id === call.id));
 });
+
+test('recording: rejects a file that is not audio', async () => {
+  const { body: call } = await req('POST', '/api/calls', { prospect_name: 'A', company: 'B' });
+  const res = await fetch(`${base}/api/calls/${call.id}/recording`, { method: 'POST', headers: { 'Content-Type': 'application/pdf' }, body: Buffer.from('x') });
+  assert.equal(res.status, 415);
+});
+
+test('recording: says so when no Gemini key is set', async () => {
+  const { body: call } = await req('POST', '/api/calls', { prospect_name: 'A', company: 'B' });
+  const res = await fetch(`${base}/api/calls/${call.id}/recording`, { method: 'POST', headers: { 'Content-Type': 'audio/mpeg' }, body: Buffer.from('fake') });
+  assert.equal(res.status, 501);
+});
