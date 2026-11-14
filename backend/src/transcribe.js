@@ -97,7 +97,7 @@ async function geminiJson(base, key, model, parts) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
     body: JSON.stringify({ contents: [{ parts }], generationConfig: { temperature: 0.1, responseMimeType: 'application/json' } }),
-    signal: AbortSignal.timeout(90000),
+    signal: AbortSignal.timeout(40000),
   });
   if (!res.ok) throw new Error(`${model} HTTP ${res.status}: ${(await res.text()).slice(0, 160)}`);
   const data = await res.json();

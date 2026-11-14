@@ -162,7 +162,7 @@ export default function CloseCall({ active, setActive }) {
             />
             {rec.status === 'uploading' ? `Transcribing ${rec.name}…` : rec.status === 'done' ? 'Upload another recording' : 'Choose recording'}
           </label>
-          {rec.status === 'uploading' && <p className="rec-note">About 5 seconds for a short call, longer for a long one.</p>}
+          {rec.status === 'uploading' && <p className="rec-note">Usually under 15 seconds. Longer calls take longer.</p>}
           {rec.status === 'error' && <p className="error">{rec.error}</p>}
           {rec.status === 'done' && (
             <>
