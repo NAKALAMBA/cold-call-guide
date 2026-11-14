@@ -120,6 +120,7 @@ export default function CloseCall({ active, setActive }) {
     }
     setActive((a) => ({ ...a, results: next, when }));
     setOutcome(suggestOutcome(next));
+    if (CHANNEL_FROM_TAP[next[7]?.tap] && (mode === 'all' || !channel || channel === 'None')) setChannel(CHANNEL_FROM_TAP[next[7].tap]);
     setCheck(null);
     setRec((r) => ({ ...r, applied: mode }));
   }

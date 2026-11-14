@@ -22,9 +22,10 @@ Built for the DeepThought Forward Deployed Engineer task, from a reading of 100 
    - three things prospects actually said at this point, from the transcripts;
    - up to six taps for what happened (number keys 1–6 work too);
    - one box for the prospect's words (at stage 5 it is highlighted: this is the line the next call is built on);
+   - a **Dictate** button on that box: the caller says the prospect's line in a few words and the browser types it (English or Hindi). It uses the browser's own speech recognition, so there is no key and no server; it is hidden in browsers without it (Firefox);
    - the next stage by name, and **End call** from any stage. A tap that ends the call ("Wrong number", "Has left the company") turns the main button into "End call: Wrong person".
    - Stage pills are tappable, because real calls skip stages: most go 1 → 2 → 6 or 7.
-3. **Close (stage 8)**: everything recorded, the stage-5 words (or a warning that the need was never heard), the outcome (pre-selected from the taps), the next step and when. **Check and save** runs the LLM check first; if the log and the call disagree, the caller sees why and picks one.
+3. **Close (stage 8)**: optionally **fill from a recording**: upload the call (mp3, m4a or wav, up to 12 MB; only when the prospect was told it is recorded) and Gemini transcribes it and suggests a tap and the prospect's words for each stage, marked *new*, *same* or *differs* against what the caller recorded. The caller chooses **Fill the gaps** or **Use the recording for all**; nothing changes until then. Then: everything recorded, the stage-5 words (or a warning that the need was never heard), the outcome (pre-selected from the taps), the next step and when. **Check and save** runs the LLM check first; if the log and the call disagree, the caller sees why and picks one.
 4. **Past calls**: every call with the stage it reached, a one-line summary, and a small chart of where your calls end, next to where the 100 transcripts ended. Tap a stage to filter. A call that was started and never closed shows as "Not logged", which is what happened to 13 of the 100 transcripts.
 
 ## What the transcripts said, and what that changed on the screen
@@ -54,6 +55,10 @@ What I took from that:
 
 ## The LLM
 
+Gemini does two jobs, both after the call, never during it: during the call the caller should be listening.
+
+### 1. The log check
+
 **What it does:** at the close, it reads what the caller tapped at each stage, the prospect's words, the next step, and the outcome the caller picked, and says whether the outcome matches the call. It returns the outcome it would log, a reason (quoting the prospect where it can), a one-line summary for the past-calls list, and the stage-5 need in the prospect's words.
 
 **Why there and nowhere else:** during the call the caller should be listening, not reading generated text. After the call, the record is what the next call is built on, and in the transcripts a quarter of the records were wrong. A check costs the caller one second and catches the expensive mistake.
@@ -61,6 +66,19 @@ What I took from that:
 **Model:** Gemini `gemini-3.5-flash-lite` on the free tier (about 1.3 s per check), with `gemini-3.8-flash` as a fallback when the first answers "high demand" (`LLM_MODEL` takes a comma-separated list, tried in order). It is called through the OpenAI-compatible endpoint, so any compatible provider (Groq, OpenRouter) works by changing three env vars. The prompt is in [backend/src/llm.js](backend/src/llm.js); it carries the outcome definitions the callers used and the rules from the transcripts ("send it on WhatsApp is still agreed_to_receive_report", "a warm goodbye after a no is still not_interested").
 
 **If the LLM is down or no key is set,** the check falls back to deterministic rules from the taps ([shared/stages.js](shared/stages.js), `suggestOutcome`), and the screen says which one checked it. The app never blocks on the LLM.
+
+### 2. Fill from a recording
+
+**What it does:** turns an uploaded call recording into stage suggestions, in two passes ([backend/src/transcribe.js](backend/src/transcribe.js)):
+
+1. **Audio to transcript.** The recording goes to Gemini's native `generateContent` endpoint as inline audio. The prompt asks only for a transcript labelled CALLER / PROSPECT / RECEPTION, in the language spoken, untranslated.
+2. **Transcript to stages.** A second, text-only pass maps the transcript onto the stages, allowed to use only the taps the screen offers, and quotes the prospect verbatim (40 words max). Results are cleaned on the server: unknown stages and taps that do not belong to their stage are dropped.
+
+**Why two passes:** in testing on a recording of T084, one pass that did both jobs on the audio picked the wrong stage-7 tap in 3 of 3 runs (it heard "send it on WhatsApp" and missed the agreed Thursday call). Split in two, it picked "call at a time they named" in 3 of 3, in about 4 seconds for a 40-second call.
+
+**What it does not do:** it never applies anything by itself. The caller sees each suggestion against what they tapped and chooses. The transcript is stored on the call (`calls.transcript`) and shown on the call detail page.
+
+**What I would add next:** recording straight from a softphone or dialer instead of uploading a file, and a consent line in the opening ("this call may be recorded").
 
 ## Architecture
 
@@ -80,6 +98,7 @@ analysis/   where-calls-end.csv: my stage label for each of the 100 calls
 | POST | `/api/calls` | Start a call. Body: `prospect_name`, `company`, optional `prospect_role`, `company_kind`, `call_type`, `caller_name`. |
 | PUT | `/api/calls/:id/stages/:stage` | Save what happened at a stage: `tap` and/or `words`. Upserts, so saving again is safe. Raises `stage_reached`. |
 | POST | `/api/calls/:id/check` | LLM check of an outcome against the call. Saves nothing. |
+| POST | `/api/calls/:id/recording` | Upload a call recording as the raw request body (`Content-Type: audio/mpeg`, `audio/mp4`, `audio/wav`, `audio/ogg`, `audio/webm`; 12 MB max). Returns the transcript and stage suggestions; stores the transcript. |
 | POST | `/api/calls/:id/close` | Close a call: `outcome`, `next_step_channel`, `next_step_when`, `summary`, `ai_check`. |
 | GET | `/api/calls` | List calls, newest first. Filters: `outcome`, `stage`, `limit`. |
 | GET | `/api/calls/:id` | One call with every stage result. |
