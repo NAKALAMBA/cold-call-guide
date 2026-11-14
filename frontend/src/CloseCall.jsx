@@ -50,6 +50,8 @@ export default function CloseCall({ active, setActive }) {
       const res = await api.check(call.id, { outcome, next_step_channel: channel, next_step_when: when.trim() || null });
       setCheck({ ...res, for: outcome });
       if (!summary && res.summary) setSummary(res.summary);
+      // The result renders below the outcome grid; bring it into view.
+      setTimeout(() => document.querySelector('.check')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
       return res;
     } catch (err) {
       setError(err.message);

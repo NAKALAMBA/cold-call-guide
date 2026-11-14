@@ -6,9 +6,9 @@ Built for the DeepThought Forward Deployed Engineer task, from a reading of 100 
 
 | | |
 |---|---|
-| **Live app (Vercel)** | `https://REPLACE-ME.vercel.app` |
-| **Backend health (Render)** | `https://REPLACE-ME.onrender.com/health` |
-| **LLM** | Google Gemini `gemini-3.8-flash` (free tier), through its OpenAI-compatible endpoint. Used for one thing: checking the outcome at the close of a call. See [The LLM](#the-llm). |
+| **Live app (Vercel)** | https://cold-call-guide-one.vercel.app |
+| **Backend health (Render)** | https://meridian-call-guide-api-7z46.onrender.com/health |
+| **LLM** | Google Gemini `gemini-3.5-flash-lite`, falling back to `gemini-3.8-flash` (free tier), through Gemini's OpenAI-compatible endpoint. Used for one thing: checking the outcome at the close of a call. See [The LLM](#the-llm). |
 | **Database** | Supabase Postgres, schema in [supabase/schema.sql](supabase/schema.sql) |
 
 > The Render free tier sleeps when idle. The first request after a while takes up to a minute; the app shows a "waking the server" banner while it does.
@@ -58,7 +58,7 @@ What I took from that:
 
 **Why there and nowhere else:** during the call the caller should be listening, not reading generated text. After the call, the record is what the next call is built on, and in the transcripts a quarter of the records were wrong. A check costs the caller one second and catches the expensive mistake.
 
-**Model:** Gemini `gemini-3.8-flash` on the free tier, called through the OpenAI-compatible endpoint, so any compatible provider (Groq, OpenRouter) works by changing three env vars. The prompt is in [backend/src/llm.js](backend/src/llm.js); it carries the outcome definitions the callers used and the rules from the transcripts ("send it on WhatsApp is still agreed_to_receive_report", "a warm goodbye after a no is still not_interested").
+**Model:** Gemini `gemini-3.5-flash-lite` on the free tier (about 1.3 s per check), with `gemini-3.8-flash` as a fallback when the first answers "high demand" (`LLM_MODEL` takes a comma-separated list, tried in order). It is called through the OpenAI-compatible endpoint, so any compatible provider (Groq, OpenRouter) works by changing three env vars. The prompt is in [backend/src/llm.js](backend/src/llm.js); it carries the outcome definitions the callers used and the rules from the transcripts ("send it on WhatsApp is still agreed_to_receive_report", "a warm goodbye after a no is still not_interested").
 
 **If the LLM is down or no key is set,** the check falls back to deterministic rules from the taps ([shared/stages.js](shared/stages.js), `suggestOutcome`), and the screen says which one checked it. The app never blocks on the LLM.
 
@@ -111,4 +111,4 @@ npm run dev               # http://localhost:5173
 
 1. **Supabase**: new project → SQL Editor → run `supabase/schema.sql`. Copy the project URL and the service-role key (Project Settings → API).
 2. **Render**: New → Blueprint → this repo (uses `render.yaml`), or New → Web Service with root directory `backend`, build `npm install`, start `npm start`, health check `/health`. Set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY`, and `CORS_ORIGINS` (your Vercel URL).
-3. **Vercel**: New Project → this repo, root directory `frontend`, framework Vite. Set `VITE_API_URL` to the Render URL. Then add the Vercel URL to `CORS_ORIGINS` on Render.
+3. **Vercel**: `VITE_API_URL=https://<render-service>.onrender.com scripts/deploy-frontend.sh`. It builds `frontend/` locally and deploys only the static files. (Deploying the repo root makes the Vercel CLI detect `frontend/` + `backend/` as "services", which new Vercel projects reject.) Then add the Vercel URL to `CORS_ORIGINS` on Render.
