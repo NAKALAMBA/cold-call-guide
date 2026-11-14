@@ -11,3 +11,5 @@ dist/
 
 # local deploy tokens
 .deploy.env
+
+.vercel
